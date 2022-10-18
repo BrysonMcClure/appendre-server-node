@@ -1,0 +1,29 @@
+{
+  "type": "module",
+  "name": "appendre-server-node",
+  "version": "1.0.0",
+  "description": "Node.js Web Server for Appendre Application",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BrysonMcClure/appendre-server-node.git"
+  },
+  "keywords": [
+    "Node",
+    "REST",
+    "Server",
+    "HTTP"
+  ],
+  "author": "Bryson McClure",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BrysonMcClure/appendre-server-node/issues"
+  },
+  "homepage": "https://github.com/BrysonMcClure/appendre-server-node#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
