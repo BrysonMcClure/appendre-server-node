@@ -2,6 +2,7 @@ import express from 'express';
 import session from 'express-session';
 import sessionController from "./controllers/session-controller.js";
 import authenticationController from "./controllers/authentication-controller.js";
+import lettersController from "./controllers/letters-controller.js";
 import mongoose from "mongoose";
 import cors from "cors";
 //ENV Imports
@@ -32,6 +33,7 @@ let sess = {
     cookie: {secure: false}
 };
 
+//Need to work on this when we switch to a production instance sine right now we are just hardcoding secure props on cookies for ease of access without https
 if(process.env.ENV === 'production') {
     app.set('trust proxy', 1);
     sess.cookie.secure = true;
@@ -40,6 +42,7 @@ if(process.env.ENV === 'production') {
 //app.use(express.json());
 sessionController(app);
 authenticationController(app);
+lettersController(app);
 
 
 

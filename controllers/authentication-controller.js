@@ -1,5 +1,7 @@
 //import sessionController from "./session-controller.js";
 import usersDao from "../mongoManagment/usersMDS/users-dao.js"
+import pensDao from "../mongoManagment/pensMDS/pens-dao.js";
+import palsDao from "../mongoManagment/palsMDS/pals-dao.js";
 import bcrypt from "bcrypt";
 
 //Just a good old fashioned constant for consitency's sake later I think
@@ -70,13 +72,28 @@ const signup = async (req, res) => {
         //res.json({"message" : `${existingUser[0].username}`});
         res.sendStatus(403);
         return;
-    } else {
-        const insertedUser = await usersDao.createUser(newUser);
-        insertedUser.password = '*****';
-        //Should automatically override anyone already logged in, appears to be so.
-        req.session['profile'] = insertedUser;
-        res.json(insertedUser);
     }
+    //Else is not neccessary since if above if is activated, it returns so operation of rest of function
+    //ceases immidatley anyway
+    let insertedUser;
+    switch (newUser.role) {
+        case 'PEN':
+            insertedUser = await pensDao.createUser(newUser);
+            //In other switch examples, return statements at the end of the case were breaking the waterfall, thus we need break statements here then.
+            //From w3 schools, If you omit the break statement, the next case will be executed even if the evaluation does not match the case.
+            //A good lesson to learn. Glad we checked it now before we ended up with a bunch of duplicate, incomplete records
+            break;
+        case 'PAL':
+            insertedUser = await palsDao.createUser(newUser);
+            break;
+        case '':
+            insertedUser = await usersDao.createUser(newUser);
+    }
+    insertedUser.password = '*****';
+    //Should automatically override anyone already logged in, appears to be/do so.
+    req.session['profile'] = insertedUser;
+    res.json(insertedUser);
+
 }
 
 const profile = (req, res) => {
