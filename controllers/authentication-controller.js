@@ -15,6 +15,7 @@ const authenticationController = (app) => {
     //should really be a delete
     app.post("/api/auth/logout", logout);
     app.post("/api/auth/checkUsernameAvailability", checkUsernameAvailability);
+    app.get("/api/auth/:uid", getUserById);
 }
 
 const checkUsernameAvailability = async (req,res) => {
@@ -104,6 +105,13 @@ const logout = (req, res) => {
     req.session.destroy();
     //All is ok status
     res.sendStatus(200);
+}
+
+const getUserById = async (req, res) => {
+    const userId = req.params.uid;
+    const user = await usersDao.findUserById(userId);
+    user.password = '*****';
+    res.json(user);
 }
 
 
