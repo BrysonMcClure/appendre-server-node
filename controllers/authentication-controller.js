@@ -39,6 +39,9 @@ const login = async (req, res) => {
     //Will maybe look into if there is a better way to go about this. Not sure at the moment.
     if(!existingUser[0]) {
         res.sendStatus(403);
+        //added to fix fall through issue, apperntly res statements do not act like returns in terms of halting
+        //logic and operation
+        return;
     }
 
     const match = await bcrypt.compare(password,existingUser[0].password);
@@ -50,6 +53,7 @@ const login = async (req, res) => {
         res.json(existingUser);
     } else {
         //Server recognizes request but refuses to authorize it, i.e. access forbidden
+        //So the thing in the parans, in this case (403), I think is called a "header" according to the error documentation.
         res.sendStatus(403);
     }
 

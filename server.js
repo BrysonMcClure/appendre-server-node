@@ -3,6 +3,7 @@ import session from 'express-session';
 import sessionController from "./controllers/session-controller.js";
 import authenticationController from "./controllers/authentication-controller.js";
 import lettersController from "./controllers/letters-controller.js";
+import repliesController from "./controllers/replies-controller.js";
 import mongoose from "mongoose";
 import cors from "cors";
 //ENV Imports
@@ -43,6 +44,7 @@ if(process.env.ENV === 'production') {
 sessionController(app);
 authenticationController(app);
 lettersController(app);
+repliesController(app);
 
 
 
