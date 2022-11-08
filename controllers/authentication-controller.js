@@ -16,12 +16,13 @@ const authenticationController = (app) => {
     app.post("/api/auth/logout", logout);
     app.post("/api/auth/checkUsernameAvailability", checkUsernameAvailability);
     app.get("/api/auth/:uid", getUserById);
+    app.get("/api/auth", findUsersByAttribute);
 }
 
 const checkUsernameAvailability = async (req,res) => {
     const existingUser = await usersDao.findUserByUsername(req.body.username);
-    const returnUser = existingUser[0];
-    if(existingUser[0]) {
+    const returnUser = existingUser;
+    if(existingUser) {
         //Avoid exposing passwords over the air
         returnUser.password ='';
     }
@@ -37,19 +38,19 @@ const login = async (req, res) => {
 
     //Dont proceed with polling for password if search result is undefined. This is a little messy,
     //Will maybe look into if there is a better way to go about this. Not sure at the moment.
-    if(!existingUser[0]) {
+    if(!existingUser) {
         res.sendStatus(403);
         //added to fix fall through issue, apperntly res statements do not act like returns in terms of halting
         //logic and operation
         return;
     }
 
-    const match = await bcrypt.compare(password,existingUser[0].password);
+    const match = await bcrypt.compare(password,existingUser.password);
 
     if(match) {
         //So we dont send the password back over the air
-        existingUser[0].password = '*****';
-        req.session['profile'] = existingUser[0];
+        existingUser.password = '*****';
+        req.session['profile'] = existingUser;
         res.json(existingUser);
     } else {
         //Server recognizes request but refuses to authorize it, i.e. access forbidden
@@ -69,7 +70,7 @@ const signup = async (req, res) => {
     const existingUser = await usersDao.findUserByUsername(newUser.username);
     //const existingUserUserNameThisIsStupidIfThisWorks = existingUser.username;
 
-    if(existingUser[0]) {
+    if(existingUser) {
         //The lesson here was find returns an array of objects, meanwhile create returns an object directly,
         //thus other functions get to use the obj directly, but we have to access it as an array element,
         //there should only ever be at most one result. Now if its defined we can do this here.
@@ -116,6 +117,28 @@ const getUserById = async (req, res) => {
     const user = await usersDao.findUserById(userId);
     user.password = '*****';
     res.json(user);
+}
+
+const findUsersByAttribute = async (req, res) => {
+    const queryObject = req.query;
+    const [key, value] = Object.entries(queryObject)[0];
+    let filter;
+    switch (key) {
+        case "username":
+            filter = {username : {$regex: value, $options: 'i'}};
+            break;
+        case "role":
+            filter = {role : {$regex: value, $options: 'i'}};
+            break;
+        default:
+            filter = null;
+    }
+    if(filter) {
+        const users = await usersDao.findUsersByAttribute(filter);
+        res.json(users);
+        return;
+    }
+    res.send(200);
 }
 
 
