@@ -1,15 +1,12 @@
 import mongoose from "mongoose";
 
 export const options = {discriminatorKey: 'users'};
-
+//{timestamps: true} what is this, a neccessary step for using the timestamp feature we want to use for password changes maybe?
 const usersSchema = mongoose.Schema(
     {
         username: String,
         password: String,
-        profilePic: {
-            data: Buffer,
-            contentType: String
-        },
+        profilePic: String,
         role: String,
         language: String //One of French or English, not sure if we define that relationship here, need to fully flesh this feature out, just leaving it here for now for future test docuemnts
     }, options);
