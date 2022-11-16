@@ -4,6 +4,7 @@ import sessionController from "./controllers/session-controller.js";
 import authenticationController from "./controllers/authentication-controller.js";
 import lettersController from "./controllers/letters-controller.js";
 import repliesController from "./controllers/replies-controller.js";
+import usersController from "./controllers/users-controller.js";
 import mongoose from "mongoose";
 import cors from "cors";
 //ENV Imports
@@ -63,6 +64,7 @@ sessionController(app);
 authenticationController(app);
 lettersController(app);
 repliesController(app);
+usersController(app);
 
 
 

@@ -1,5 +1,6 @@
 import repliesDao from "../mongoManagment/documentsMDS/repliesMDS/replies-dao.js";
-
+import palsDao from "../mongoManagment/palsMDS/pals-dao.js";
+import usersDao, {updateUser} from "../mongoManagment/usersMDS/users-dao.js";
 
 const repliesController = (app) => {
     // app.get('/api/replies', findAllReplies);
@@ -23,6 +24,12 @@ const createReply = async (req, res) => {
     //responsibility of adding this to the document go where? I was thinking here by calling the dao, but im
     //starting to think not since that would fall under an update req. so hmmmmmmm
     const insertedReply = await repliesDao.createReply(newReply);
+
+    //Whenever creating a reply, the author should also be update with a reference to the reply they just wrote.
+    //Add a reference to this reply to the pal author of this reply
+    const author = palsDao.findUserById(aid);
+    author.replies.push(insertedReply._id);
+    const responsee = updateUser(aid, author);
 
     res.json(insertedReply);
 }
