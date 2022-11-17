@@ -6,6 +6,7 @@
 import usersDao from "../mongoManagment/usersMDS/users-dao.js"
 import pensDao from "../mongoManagment/pensMDS/pens-dao.js";
 import palsDao from "../mongoManagment/palsMDS/pals-dao.js";
+import letterDao from "../mongoManagment/lettersMDS/letter-dao.js"
 import bcrypt from "bcrypt";
 import userModel from "../mongoManagment/usersMDS/users-model.js";
 
@@ -27,6 +28,8 @@ const authenticationController = (app) => {
     app.put("/api/auth/:pid/acceptCollaboration/:uid", acceptCollaboration);
     app.put("/api/auth/:pid/requestsCollaboration/:uid", requestsCollaboration);
     app.put("/api/auth/:pid/follow/:uid", follow);
+    app.delete("/api/auth/:pid/deleteLetter/:lid", deleteLetter);
+    app.post("/api/auth/:pid/writeLetter", writeLetter);
 }
 
 //no local changes = everything pulled directly from server session to maintain parody.
@@ -245,6 +248,52 @@ const follow = async (req, res) => {
     const response = await updateUserFunction(pid, profileUser);
     req.session['profile'] = await usersDao.findUserById(pid);
     res.send(response);
+}
+
+const deleteLetter = async (req, res) => {
+    const pid = req.params.pid;
+    const lid =req.params['lid'];
+
+    if(pid !== req.session['profile']._id){
+        res.sendStatus(403);
+        return;
+    }
+
+    let profileUser = await unpopulatedFindUserById(pid);
+    profileUser.letters = profileUser.letters.filter(letterId => letterId !=  lid);
+    let response = await updateUserFunction(pid, profileUser);
+    if(response.modifiedCount === 1) {
+        response = await letterDao.deleteLetter(lid);
+    }
+    //Still need to fix this to move it into the countroller and out of the dao ust maybe for consitency's sake if anything maybe right?
+    req.session['profile'] = await usersDao.findUserById(pid);
+    res.send(response);
+
+}
+
+const writeLetter = async (req, res) => {
+    const pid = req.params['pid'];
+    const newLetter = req.body;
+    newLetter.author = pid;
+
+    if(pid !== req.session['profile']._id){
+        res.sendStatus(403);
+        return;
+    }
+
+    let profileUser = await unpopulatedFindUserById(pid);
+
+    let addedLetter = await letterDao.createLetter(newLetter);
+    if(addedLetter) {
+        profileUser.letters.push(addedLetter._id);
+    }
+    const response = await updateUserFunction(pid, profileUser);
+
+    req.session['profile'] = await usersDao.findUserById(pid);
+
+    if(response.modifiedCount === 1) {
+        res.send(addedLetter);
+    }
 }
 
 const acceptCollaboration = async (req, res) => {

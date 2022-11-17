@@ -27,9 +27,15 @@ export const createLetter = async (newLetter) => {
     //But long story short am no longer calling populate on the replies at this stage, since we know its empty. Not sure though
     //if thats actually the problem. DOesnt really matter though since our rending logic guards against/ allows for
     //the empty replies case anyway, also the pupulate in our find all didnt seem to mind, so IDK?
+    //we populate but never tell the autor right? I think that tracks thinking about/ considering the fact
+    //that until recently we didnt have a way to update uesrs period even from/ at the dao level, so that would track right?
+
     const returnValue = await  response.populate('author');
     return returnValue;
 }
-export const deleteLetter = (lid) => lettersModel.deleteOne({_id: lid});
+export const deleteLetter = async (lid) => {
+    const response = await lettersModel.deleteOne({_id: lid});
+    return response;
+}
 export const updateLetter = (lid, letter) => lettersModel.updateOne({_id: lid}, {$set: letter});
 export default {findAllLetters, findLettersByAttribute, findLetterById, createLetter, deleteLetter, updateLetter};
