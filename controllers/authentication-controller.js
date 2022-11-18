@@ -30,6 +30,7 @@ const authenticationController = (app) => {
     app.put("/api/auth/:pid/follow/:uid", follow);
     app.delete("/api/auth/:pid/deleteLetter/:lid", deleteLetter);
     app.post("/api/auth/:pid/writeLetter", writeLetter);
+    app.put("/api/auth/changePassword", changePassword);
 }
 
 //no local changes = everything pulled directly from server session to maintain parody.
@@ -266,6 +267,43 @@ const deleteLetter = async (req, res) => {
         response = await letterDao.deleteLetter(lid);
     }
     //Still need to fix this to move it into the countroller and out of the dao ust maybe for consitency's sake if anything maybe right?
+    req.session['profile'] = await usersDao.findUserById(pid);
+    res.send(response);
+
+}
+
+const changePassword = async (req, res) => {
+
+    const user = req.body;
+    const pid = user._id;
+    const password = user.password;
+    //This again became a find one because usernames should be unique identifieers theoretically,
+    //No two users should be able to have the same username right???
+    //We work with unpopulated models, the client side shouldnt have to and we deal with it so all they know is populated stuff now
+    //I think that makes sense right?????? They just think its a magical list of ids right??
+    //And populate just saves them teh trouble of having to constantly having to run lookups on sub props right???????
+    const existingUser = unpopulatedFindUserById(pid);
+
+    //Ensures we are already logged in, aka old password was already provided before we allow someone to try
+    //and change the password right? Makes sense to me.
+    if (pid !== req.session['profile']._id) {
+        res.sendStatus(403);
+        return;
+    }
+
+    //User should always exist if you are calling this I would think right? But still going to add a check
+    //I think wouldnt be too bad right?
+    if(!existingUser) {
+        res.sendStatus(403);
+        return;
+    }
+
+    existingUser.password = await bcrypt.hash(password, saltRounds);
+
+    //Allways a users dao thing since this is a top level common property between the two typees right? Yea me thinks!??1!??!!?!?
+    const response = await usersDao.changePassword(pid, existingUser);
+
+    //Set populated profile..right?????
     req.session['profile'] = await usersDao.findUserById(pid);
     res.send(response);
 

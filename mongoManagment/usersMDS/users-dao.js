@@ -45,12 +45,20 @@ export const createUser = (newUser) => userModel.create(newUser);
 //for now changing your role will be impossible and neccesitate a new account. Maybe want to add the complicated
 //through logic to allow this later, but not now. Thats more of an account migration then a simple update like profile pic or language which
 //are simplified less tethered fields.
-export const updateUser = (uid, updatedUser) => {
-    const response = userModel.updateOne({_id: uid}, {$set : {
+export const updateUser = async (uid, updatedUser) => {
+    const response = await userModel.updateOne({_id: uid}, {$set : {
         username: updatedUser.username,
             profilePic: updatedUser.profilePic,
         language: updatedUser.language}});
     return response;
 }
+
+export const changePassword = async (uid, updateUser) => {
+    const response = await userModel.updateOne({_id: uid}, {$set : {
+            password: updateUser.password
+        }});
+    return response;
+}
+
 //mongoose still ues create instead of insertOne, interesting
-export default {findUserByUsername, findUsersByAttribute, unpopulatedFindUserById, findUserById, findUserByCredentials, createUser, updateUser};
+export default {findUserByUsername, findUsersByAttribute, changePassword, unpopulatedFindUserById, findUserById, findUserByCredentials, createUser, updateUser};
