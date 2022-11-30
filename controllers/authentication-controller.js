@@ -9,6 +9,7 @@ import palsDao from "../mongoManagment/palsMDS/pals-dao.js";
 import letterDao from "../mongoManagment/lettersMDS/letter-dao.js"
 import bcrypt from "bcrypt";
 import userModel from "../mongoManagment/usersMDS/users-model.js";
+import repliesDao from "../mongoManagment/documentsMDS/repliesMDS/replies-dao.js";
 
 //Just a good old fashioned constant for consitency's sake later I think
 const saltRounds = 10;
@@ -31,6 +32,10 @@ const authenticationController = (app) => {
     app.delete("/api/auth/:pid/deleteLetter/:lid", deleteLetter);
     app.post("/api/auth/:pid/writeLetter", writeLetter);
     app.put("/api/auth/changePassword", changePassword);
+    app.put("/api/auth/:pid/provideFeedback/:rid", provideFeedback);
+    //Arguing this is a put since while yes under the hood it is infact creating a reply, its also modifiying a letter. Really perhasps an arguabbly better
+    //name for this could be, attachReplyToLetter, as in, I have written a reply, here it is, please attach it to a letter for me and then send me back my new shiny modified letter, which I will then go ahead and maintain parody with, and I think that makes a lot more sense.
+    app.put("/api/auth/:pid/replyTo/:lid", replyTo);
 }
 
 //no local changes = everything pulled directly from server session to maintain parody.
@@ -272,6 +277,42 @@ const deleteLetter = async (req, res) => {
 
 }
 
+//path param, id of user providing feedback, id of reply feeback is attached to, feedback of object
+//of strucuture {text: string, author: penUser._id}
+const provideFeedback = async(req, res) => {
+    const pid = req.params.pid;
+    const rid = req.params.rid;
+    const feedback = req.body;
+    //Ensures author is onlu logged in user right? Yes. Yes indeed, after thinking this through again very very throughouly.
+    feedback.author = pid;
+
+    if(pid !== req.session['profile']._id){
+        res.sendStatus(403);
+        return;
+    }
+
+    let reply = await repliesDao.unpopulatedFindReplyById(rid);
+    reply.feedback = feedback;
+    //Reply is already attached to letter so no changes there right?
+    //Also no changes to profile right? we will need to notify the letter to re-populatee maybe,
+    //but its referenced everywhere else so we are adding nothing right? Feels wrong but i thin kthis is ok.
+    //given what changes here does this maybe belong in reply controller bettER? idk man? These lines
+    //keep geetting blurrier and blurrrier huh?
+    let update = repliesDao.updateReply(rid, reply);
+    //not actually the way to go right? I mean, we modify the reply sure, but its really then sub modifying/ rippling effect out/ up to the letter right,
+    //so again should be sending letters right huh? should maybe lets get rid of the return here, have to restart and log into anyway right? hmmm. ok then ehhhh?
+    // if(update.modifiedCount === 1) {
+    //     res.send(reply);
+    //     return;
+    // }
+    //updating the reply, means when the populate goes to poll it, it will be the new one which gets sent along, right? I think so right????
+    const reNewPopulatedLetter = await letterDao.findLetterById(reply.parentLetter);
+    //Parent letter prop should just be a ready to roll id right whatin since weve got the whole unpopulated find by thing goin right? I think actually that works out then
+    //and may actually then in fact be ready to rolll or better that way/ simplie/ easier then ehhh maybe?
+    res.send(reNewPopulatedLetter);
+    //res.send(update);
+}
+
 const changePassword = async (req, res) => {
 
     const user = req.body;
@@ -282,7 +323,7 @@ const changePassword = async (req, res) => {
     //We work with unpopulated models, the client side shouldnt have to and we deal with it so all they know is populated stuff now
     //I think that makes sense right?????? They just think its a magical list of ids right??
     //And populate just saves them teh trouble of having to constantly having to run lookups on sub props right???????
-    const existingUser = unpopulatedFindUserById(pid);
+    const existingUser = await unpopulatedFindUserById(pid);
 
     //Ensures we are already logged in, aka old password was already provided before we allow someone to try
     //and change the password right? Makes sense to me.
@@ -307,6 +348,46 @@ const changePassword = async (req, res) => {
     req.session['profile'] = await usersDao.findUserById(pid);
     res.send(response);
 
+}
+
+const replyTo = async (req, res) => {
+    const pid = req.params.pid;
+    const lid = req.params.lid;
+    const reply = req.body;
+
+    if(!verifyUser(pid, req)) {
+        res.sendStatus(403);
+        return;
+    }
+
+    reply.author = pid;
+    reply.parentLetter = lid;
+
+    //Four things need to happen
+    //1.Create the reply
+    //2.Add the reply to this users reply list
+    //3.Add the reply id to the letters list of replies (created a new dao method for this, me thinks that might help simplify things/ maybe an operation like this can make more sense there,
+    //and then I also think we can take advantage of the/ my newly lerned/ found push method action instead of a set requiring us to first pull the array data which would be very nice. Yay!)a
+    //4. return the new letter actually I think. Since the reply is created, but the current client side/ user facing side that it impacts is the letter.
+
+    const newReply = await repliesDao.createReply(reply);
+    const profileUser = await unpopulatedFindUserById(pid);
+    //res.send(pid);
+    profileUser.replies = profileUser.replies.concat([newReply._id]);
+    const palResponse = await palsDao.updateUser(pid, profileUser);
+    // if(palResponse.modifiedCount === 1) {
+    //
+    // } Maybe not sure necessary since no harm done? idk. Eitherway this should populate the new reply ehhh? No circualr stuff yet, thats a population problem bridge to come to/ corss when we get there ehhhh?
+    req.session['profile'] = await palsDao.findUserById(pid); //not generic so why use generic right? Idk man.
+    const response = await letterDao.addReply(lid, newReply._id);
+    //using find now so its a properly populated letter right? this should be where we get to test out the new deep/ two stage population then right/ ehhh?
+    const letter = await letterDao.findLetterById(lid);
+    res.send(letter);
+    //no law against a put request returning a modified object right? I would argue taht with all of the population crap going on it acctually in fact makes a lot/ a heack a ton of more sense this way?
+}
+
+const verifyUser = (pid, req) => {
+    return pid === req.session['profile']._id;
 }
 
 const writeLetter = async (req, res) => {
@@ -413,6 +494,7 @@ const unpopulatedFindUserById = async(uid) => {
     return user;
 
 }
+
 
 
 

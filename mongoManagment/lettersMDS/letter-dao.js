@@ -6,7 +6,18 @@ export const findLetterById = async (lid) => {
     //change to: await lettersModel.findById(lid).populate('author').populate('replies');
     //Didnt realize this was built in thing, but good to know it exists, may try this later, for now a few too many variables/ things changing right now.
     //difference between find and findone is just find the first instance vs all matching instances maybe me thinks??
-    const response = await lettersModel.findOne({_id: lid}).populate('author').populate('replies');
+    //I think we can just do this right? After you populate the replies, theoretically I can just then path populate it right? Since now its an object wit sub populatable stuff now right?
+    //Idk that may just break everything and we may want to use a sub deep population that we call on the replies schema to exectue. Not sure about that for now.
+    // const response = await lettersModel.findOne({_id: lid}).populate('author').populate(
+    //     {path: 'replies', populate: {path: 'author'}}).populate({path: 'replies', populate: {path: 'feedback.author'}});
+    const response = await lettersModel.findOne({_id: lid}).populate('author').populate(
+        {path: 'replies', populate: [{path: 'author'}, {path: 'feedback.author'}]});
+    //DOuble populate doesnt seem to have any problems with repating replies popoulate once its resultant is no longer jsut an id array. i guess it must nknow that somehow, eitherway it doesnt
+    //really seem to be causing any problems so that's nice. Seems like you can put multipble same level populates in an array, not surre if thats neccessarily any more conise or anything exactly hmmm?,
+    //oh wait, unless, that same level thing makes me wonder, hmmm, same level of foreign document for replies, even if path is a level deeper maybe, i think for the levels we are talking about it may actually befine/ work nicely in that way
+    //to help make things a little more compact and concise maybe ehh, ioether way I think this is nicer than having to call out to the other reducer which could totally cause cyclical population issues,
+    //and what's more this case kind of being supported by default in mongoose/ by mongoose in default implies this is maybve a very valid approabch, i would say good but what is good/ best any way ehhh?
+    //const returnTest = await response.populate('replies.author');
     return response;
 }
 export const createLetter = async (newLetter) => {
@@ -38,4 +49,8 @@ export const deleteLetter = async (lid) => {
     return response;
 }
 export const updateLetter = (lid, letter) => lettersModel.updateOne({_id: lid}, {$set: letter});
-export default {findAllLetters, findLettersByAttribute, findLetterById, createLetter, deleteLetter, updateLetter};
+export const addReply = async (lid, rid) => {
+    const response = await lettersModel.findByIdAndUpdate(lid, { $push: { replies: rid } });
+    return response;
+}
+export default {findAllLetters, findLettersByAttribute, addReply, findLetterById, createLetter, deleteLetter, updateLetter};

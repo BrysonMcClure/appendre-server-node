@@ -8,7 +8,7 @@ import penUserModel from "./pens-model.js"
 //at least yet anyway outside of crud stuff.
 export const createUser = (newUser) => penUserModel.create(newUser);
 //Populate is important for things like displaying a specific users letters and such. Up till now generalization has worked,but we need pupoluation here
-export const findUserById = (peuid) => penUserModel.findOne({_id: peuid}).populate('collaborators.pen').populate('letters');
+export const findUserById = (peuid) => penUserModel.findOne({_id: peuid}).populate('collaborators.pen').populate('letters').populate('letters.replies');
 export const updateUser = async (uid, updatedUser) => {
     const status = await penUserModel.updateOne({_id: uid}, {$set: {
         collaborators: updatedUser.collaborators,

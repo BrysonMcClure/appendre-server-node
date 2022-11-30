@@ -5,6 +5,7 @@ export const createReply = async (newReply) => {
     newReply.likes = 0;
     newReply.dislikes = 0;
     newReply.date = new Date();
+    newReply.replies = [];
     const createdReply = await repliesModel.create(newReply);
     //creating letter first with provided IDs and things, and then calling populate on it once the ID is established.
     //ye best be awaiting populate if ye be wanting to use its result any time soon argggggggggg.
@@ -20,4 +21,19 @@ export const createReply = async (newReply) => {
     return populatedReply;
 }
 
-export default {createReply};
+export const updateReply = async (rid, reply) => {
+    //I think this should work. Havent used findbyidandupdate yet, but theoretically should work the same as passing id
+    //as the filter argument, just a little less verbose right?
+    const status = await repliesModel.findByIdAndUpdate(rid, {$set: {
+            feedback: reply.feedback,
+            troubleWords: reply.troubleWords
+        }});
+    return status;
+}
+
+export const unpopulatedFindReplyById = async (rid) => {
+    const reply = await repliesModel.findById(rid);
+    return reply;
+}
+
+export default {createReply, updateReply, unpopulatedFindReplyById};
