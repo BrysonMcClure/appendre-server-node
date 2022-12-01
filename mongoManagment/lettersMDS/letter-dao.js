@@ -1,7 +1,7 @@
 import lettersModel from "./letter-model.js";
 //call letterDocument like penUser? IDK maybe feels a little pedantic still or something. IDK.
 export const findAllLetters = () => lettersModel.find().populate('author').populate('replies');
-export const findLettersByAttribute = (filter) => lettersModel.find(filter).populate('author').populate('replies');;
+export const findLettersByAttribute = (filter) => lettersModel.find(filter).populate('author').populate('replies');
 export const findLetterById = async (lid) => {
     //change to: await lettersModel.findById(lid).populate('author').populate('replies');
     //Didnt realize this was built in thing, but good to know it exists, may try this later, for now a few too many variables/ things changing right now.

@@ -13,11 +13,16 @@ dotenv.config();
 //Needs to be an env variable later
 //Not sure what the newurl parser is yet. using this feature for parsing image data as string encodins is now to me
 //, {useNewUrlParse: true, useUnifiedTopology: true}
+//eendedup not using this stuff really. ended up being a for server side image upload as opposed to client react side image upload thing
+//more so I think/ If i remeber correctly.
 //ok so has something to do with deprecated url parsing. Somehow, I am thinking we dont actually need this since as far as a i can tell,
 //it has nothing specific to do with images and is just a general things some others seem to need but for us everything is working just fine for  now
 //without it. Fingers crossed this doesnt come back to bite us in the future.
+
+//const CONNECTION_STRING = process.env.DB_CONNECTION_STRING || 'mongodb://localhost:27017/appendredb'
+const CONNECTION_STRING = 'mongodb+srv://brysonmcclure:appendreAPI@cluster0.5drzcoi.mongodb.net/?retryWrites=true&w=majority';
 //Reminder: this is called a connection string: the string that describes the location where we can connect to our mongo db!
-mongoose.connect('mongodb://localhost:27017/appendredb');
+mongoose.connect(CONNECTION_STRING);
 const app = express();
 
 app.use(session({
@@ -69,4 +74,4 @@ usersController(app);
 
 
 //Make this an env variable later
-app.listen(4000);
+app.listen(process.env.PORT || 4000);
