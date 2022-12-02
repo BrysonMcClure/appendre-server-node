@@ -29,6 +29,7 @@ const CONNECTION_STRING = 'mongodb+srv://brysonmcclure:appendreAPI@cluster0.5drz
 mongoose.connect(CONNECTION_STRING);
 const app = express();
 
+app.set('trust proxy', 1);
 //Will need to have whitelist domain changed to a env var later. This makes node server specific about
 //which applications can access us and our data now. Needs to be so since we are using credentials.
 //Not exactly sure yet how this works with granting access to resources.
@@ -53,7 +54,7 @@ if(process.env.ENV === 'production') {
     sess.cookie.secure = true;
 }
 
-app.set('trust proxy', 1);
+
 
 app.use(session({
     resave: false,
