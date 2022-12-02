@@ -40,7 +40,11 @@ app.use(cors({
 //Development Mode Stuff
 let sess = {
     secret: process.env.SESSION_SECRET,
-    cookie: {secure: false}
+    cookie: {
+        secure: false,
+        httpOnly: false,
+        sameSite: 'none'
+    }
 };
 
 //Need to work on this when we switch to a production instance sine right now we are just hardcoding secure props on cookies for ease of access without https
