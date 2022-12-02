@@ -41,8 +41,8 @@ app.use(cors({
 let sess = {
     secret: process.env.SESSION_SECRET,
     cookie: {
-        secure: false,
-        httpOnly: false,
+        secure: true,
+        //httpOnly: false,
         sameSite: 'none'
     }
 };
@@ -52,6 +52,8 @@ if(process.env.ENV === 'production') {
     app.set('trust proxy', 1);
     sess.cookie.secure = true;
 }
+
+app.set('trust proxy', 1);
 
 app.use(session({
     resave: false,
