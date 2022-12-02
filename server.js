@@ -22,8 +22,8 @@ import cors from "cors";
 //it has nothing specific to do with images and is just a general things some others seem to need but for us everything is working just fine for  now
 //without it. Fingers crossed this doesnt come back to bite us in the future.
 
-//const CONNECTION_STRING = process.env.DB_CONNECTION_STRING || 'mongodb://localhost:27017/appendredb'
-const CONNECTION_STRING = 'mongodb+srv://brysonmcclure:appendreAPI@cluster0.5drzcoi.mongodb.net/?retryWrites=true&w=majority';
+const CONNECTION_STRING = process.env.DB_CONNECTION_STRING || 'mongodb://localhost:27017/appendredb'
+// const CONNECTION_STRING = ';
 //Reminder: this is called a connection string: the string that describes the location where we can connect to our mongo db!
 mongoose.connect(CONNECTION_STRING);
 const app = express();
@@ -43,7 +43,8 @@ if(process.env.ENV === 'production') {
 app.use(session({
     resave: false,
     saveUninitialized: true,
-    sess
+    secret: sess.secret,
+    cookie: sess.cookie
 }));
 //What exactly does express json do? Modifying this now to add a file limit it seems.
 //So express json is our middleware funciton/ library/ whatever that allows express to read the body of an
@@ -63,7 +64,7 @@ app.use(express.json({limit: "30mb", extended: true}));
 //Not exactly sure yet how this works with granting access to resources.
 app.use(cors({
     credentials: true,
-    origin: 'http://localhost:3000'
+    origin: (process.env.ORIGIN || 'http://localhost:3000')
 }))
 
 
