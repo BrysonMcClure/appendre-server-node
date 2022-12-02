@@ -8,7 +8,7 @@ import usersController from "./controllers/users-controller.js";
 import mongoose from "mongoose";
 import cors from "cors";
 //ENV Imports
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 dotenv.config();
 //Needs to be an env variable later
 //Not sure what the newurl parser is yet. using this feature for parsing image data as string encodins is now to me
