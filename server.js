@@ -1,6 +1,6 @@
 import express from 'express';
 //import session from 'express-session';
-import session from 'cookie-session'
+import session from 'cookie-session';
 import sessionController from "./controllers/session-controller.js";
 import authenticationController from "./controllers/authentication-controller.js";
 import lettersController from "./controllers/letters-controller.js";
@@ -28,6 +28,14 @@ const CONNECTION_STRING = 'mongodb+srv://brysonmcclure:appendreAPI@cluster0.5drz
 //Reminder: this is called a connection string: the string that describes the location where we can connect to our mongo db!
 mongoose.connect(CONNECTION_STRING);
 const app = express();
+
+//Will need to have whitelist domain changed to a env var later. This makes node server specific about
+//which applications can access us and our data now. Needs to be so since we are using credentials.
+//Not exactly sure yet how this works with granting access to resources.
+app.use(cors({
+    credentials: true,
+    origin: (process.env.ORIGIN || 'http://localhost:3000')
+}))
 
 //Development Mode Stuff
 let sess = {
@@ -60,14 +68,6 @@ app.use(express.json({limit: "30mb", extended: true}));
 //node system goes, not really much needs to change beyond adding that single, non nested object atrribute to our schema, that is lovel isnt it?!
 //Love it when it comes together and after a lot of hard work we are able to find a nice/ simple/ and east solution like that.
 //app.use(express.urlencoded({limit: "30mb", extended: true}));
-//Will need to have whitelist domain changed to a env var later. This makes node server specific about
-//which applications can access us and our data now. Needs to be so since we are using credentials.
-//Not exactly sure yet how this works with granting access to resources.
-app.use(cors({
-    credentials: true,
-    origin: (process.env.ORIGIN || 'http://localhost:3000')
-}))
-
 
 //app.use(express.json());
 sessionController(app);
