@@ -28,6 +28,18 @@ const CONNECTION_STRING = 'mongodb+srv://brysonmcclure:appendreAPI@cluster0.5drz
 mongoose.connect(CONNECTION_STRING);
 const app = express();
 
+//Development Mode Stuff
+let sess = {
+    secret: process.env.SESSION_SECRET,
+    cookie: {secure: false}
+};
+
+//Need to work on this when we switch to a production instance sine right now we are just hardcoding secure props on cookies for ease of access without https
+if(process.env.ENV === 'production') {
+    app.set('trust proxy', 1);
+    sess.cookie.secure = true;
+}
+
 app.use(session({
     resave: false,
     saveUninitialized: true,
@@ -54,17 +66,6 @@ app.use(cors({
     origin: 'http://localhost:3000'
 }))
 
-//Development Mode Stuff
-let sess = {
-    secret: process.env.SESSION_SECRET,
-    cookie: {secure: false}
-};
-
-//Need to work on this when we switch to a production instance sine right now we are just hardcoding secure props on cookies for ease of access without https
-if(process.env.ENV === 'production') {
-    app.set('trust proxy', 1);
-    sess.cookie.secure = true;
-}
 
 //app.use(express.json());
 sessionController(app);
