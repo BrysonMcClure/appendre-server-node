@@ -43,7 +43,7 @@ let sess = {
     secret: process.env.SESSION_SECRET,
     cookie: {
         secure: true,
-        //httpOnly: false,
+        httpOnly: false,
         sameSite: 'none'
     }
 };
@@ -60,10 +60,7 @@ app.use(session({
     resave: false,
     saveUninitialized: true,
     secret: sess.secret,
-    cookie: {
-        secure: true,
-        sameSite: 'none'
-    }
+    cookie: sess.cookie
 }));
 //What exactly does express json do? Modifying this now to add a file limit it seems.
 //So express json is our middleware funciton/ library/ whatever that allows express to read the body of an
