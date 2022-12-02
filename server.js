@@ -22,8 +22,8 @@ import cors from "cors";
 //it has nothing specific to do with images and is just a general things some others seem to need but for us everything is working just fine for  now
 //without it. Fingers crossed this doesnt come back to bite us in the future.
 
-const CONNECTION_STRING = process.env.DB_CONNECTION_STRING || 'mongodb://localhost:27017/appendredb'
-// const CONNECTION_STRING = ';
+//const CONNECTION_STRING = process.env.DB_CONNECTION_STRING || 'mongodb://localhost:27017/appendredb'
+const CONNECTION_STRING = 'mongodb+srv://brysonmcclure:appendreAPI@cluster0.5drzcoi.mongodb.net/?retryWrites=true&w=majority'
 //Reminder: this is called a connection string: the string that describes the location where we can connect to our mongo db!
 mongoose.connect(CONNECTION_STRING);
 const app = express();
