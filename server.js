@@ -29,10 +29,9 @@ mongoose.connect(CONNECTION_STRING);
 const app = express();
 
 app.use(session({
-    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-    cookie: {secure: false}
+    sess
 }));
 //What exactly does express json do? Modifying this now to add a file limit it seems.
 //So express json is our middleware funciton/ library/ whatever that allows express to read the body of an
@@ -57,7 +56,7 @@ app.use(cors({
 
 //Development Mode Stuff
 let sess = {
-    secret: 'superDuperSecret',
+    secret: process.env.SESSION_SECRET,
     cookie: {secure: false}
 };
 
