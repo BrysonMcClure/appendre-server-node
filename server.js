@@ -13,6 +13,18 @@ import MongoStore from 'connect-mongo';
 // import * as dotenv from 'dotenv';
 // dotenv.config();
 
+let dotenv;
+
+try {
+    dotenv = await import('dotenv');
+} catch (e) {
+    console.log("dovtenv not avaliable");
+}
+
+if(dotenv) {
+    dotenv.config();
+}
+
 //so run $ node -r dotenv/config your_script.js on local instead? hmmmm
 
 //Needs to be an env variable later
@@ -24,12 +36,12 @@ import MongoStore from 'connect-mongo';
 //it has nothing specific to do with images and is just a general things some others seem to need but for us everything is working just fine for  now
 //without it. Fingers crossed this doesnt come back to bite us in the future.
 
-const CONNECTION_STRING = process.env.DB_CONNECTION_STRING || 'mongodb://localhost:27017/appendredb'
+const CONNECTION_STRING = process.env.APPENDRE_DB_CONNECTION_STRING || 'mongodb://localhost:27017/appendredb'
 //Reminder: this is called a connection string: the string that describes the location where we can connect to our mongo db!
 mongoose.connect(CONNECTION_STRING);
 const app = express();
 
-app.set('trust proxy', 1);
+//app.set('trust proxy', 1);
 //Will need to have whitelist domain changed to a env var later. This makes node server specific about
 //which applications can access us and our data now. Needs to be so since we are using credentials.
 //Not exactly sure yet how this works with granting access to resources.
@@ -42,16 +54,16 @@ app.use(cors({
 let sess = {
     secret: process.env.SESSION_SECRET,
     cookie: {
-        secure: true,
-        httpOnly: false,
-        sameSite: 'none'
+        secure: false,
     }
 };
 
 //Need to work on this when we switch to a production instance sine right now we are just hardcoding secure props on cookies for ease of access without https
-if(process.env.ENV === 'production') {
+if(process.env.ENV === "production") {
     app.set('trust proxy', 1);
     sess.cookie.secure = true;
+    sess.cookie.httpOnly = false;
+    sess.cookie.sameSite = 'none';
 }
 
 
